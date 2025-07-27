@@ -1,74 +1,47 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Bulletin, Note } from '../models/note';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class BulletinService {
   private apiUrl = 'http://localhost:8000/api';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  getBulletins(): Observable<Bulletin[]> {
-    return this.http.get<Bulletin[]>(`${this.apiUrl}/bulletins`);
+  // Récupérer tous les bulletins
+  getBulletins(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/bulletins`);
   }
 
-  getBulletin(id: number): Observable<Bulletin> {
-    return this.http.get<Bulletin>(`${this.apiUrl}/bulletins/${id}`);
+  // Récupérer les bulletins d'une classe
+  getBulletinsByClasse(classeId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/classes/${classeId}/bulletins`);
   }
 
-  getBulletinsByEleve(eleveId: number): Observable<Bulletin[]> {
-    return this.http.get<Bulletin[]>(`${this.apiUrl}/eleves/${eleveId}/bulletins`);
+  // Récupérer le bulletin d'un élève
+  getBulletinByEleve(eleveId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/eleves/${eleveId}/bulletin`);
   }
 
-  getBulletinsByClasse(classeId: number): Observable<Bulletin[]> {
-    return this.http.get<Bulletin[]>(`${this.apiUrl}/classes/${classeId}/bulletins`);
+  // Générer les bulletins pour une classe
+  genererBulletins(classeId: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/classes/${classeId}/bulletins/generer`, {});
   }
 
-  generateBulletin(eleveId: number, periode: string): Observable<Bulletin> {
-    return this.http.post<Bulletin>(`${this.apiUrl}/bulletins/generer`, {
-      eleve_id: eleveId,
-      periode: periode
-    });
-  }
-
-  downloadBulletinPDF(bulletinId: number): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/bulletins/${bulletinId}/pdf`, {
+  // Exporter les bulletins d'une classe
+  exporterBulletins(classeId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/classes/${classeId}/bulletins/export`, {
       responseType: 'blob'
     });
   }
 
-  downloadBulletinsClasse(classeId: number, periode: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/classes/${classeId}/bulletins/telecharger`, {
-      responseType: 'blob',
-      params: { periode }
-    });
+  // Récupérer les statistiques des bulletins
+  getStatsBulletins(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/bulletins/stats`);
   }
 
-  // Services pour les notes
-  getNotes(): Observable<Note[]> {
-    return this.http.get<Note[]>(`${this.apiUrl}/notes`);
-  }
-
-  getNotesByEleve(eleveId: number): Observable<Note[]> {
-    return this.http.get<Note[]>(`${this.apiUrl}/eleves/${eleveId}/notes`);
-  }
-
-  getNotesByClasse(classeId: number): Observable<Note[]> {
-    return this.http.get<Note[]>(`${this.apiUrl}/classes/${classeId}/notes`);
-  }
-
-  createNote(note: Partial<Note>): Observable<Note> {
-    return this.http.post<Note>(`${this.apiUrl}/notes`, note);
-  }
-
-  updateNote(id: number, note: Partial<Note>): Observable<Note> {
-    return this.http.put<Note>(`${this.apiUrl}/notes/${id}`, note);
-  }
-
-  deleteNote(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/notes/${id}`);
+  // Récupérer les bulletins de l'enseignant connecté
+  getMesBulletins(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/bulletins/mes-bulletins`);
   }
 } 

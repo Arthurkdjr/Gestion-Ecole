@@ -1,0 +1,30 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class MatiereService {
+  private apiUrl = 'http://localhost:8000/api/matieres';
+
+  constructor(private http: HttpClient) {}
+
+  getMatieres(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
+  }
+
+  getMatiere(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
+
+  createMatiere(matiere: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, matiere);
+  }
+
+  updateMatiere(id: number, matiere: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, matiere);
+  }
+
+  deleteMatiere(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  }
+} 

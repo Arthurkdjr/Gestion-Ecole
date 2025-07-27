@@ -31,8 +31,10 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./components/enseignant/dashboard/dashboard.component').then(m => m.DashboardComponent) },
-      { path: 'notes', loadComponent: () => import('./components/enseignant/notes/notes.component').then(m => m.NotesComponent) },
-      { path: 'classes', loadComponent: () => import('./components/enseignant/classes/classes.component').then(m => m.ClassesComponent) }
+      { path: 'classes', loadComponent: () => import('./components/enseignant/classes/classes.component').then(m => m.ClassesComponent) },
+      { path: 'classes/:id/eleves', loadComponent: () => import('./components/enseignant/classes/eleves.component').then(m => m.ElevesComponent) },
+      { path: 'eleves/:id/notes', loadComponent: () => import('./components/enseignant/notes/notes.component').then(m => m.NotesComponent) },
+      { path: 'bulletins', loadComponent: () => import('./components/enseignant/bulletins/bulletins.component').then(m => m.BulletinsComponent) }
     ]
   },
   

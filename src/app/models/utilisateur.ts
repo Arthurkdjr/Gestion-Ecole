@@ -6,11 +6,16 @@ export interface Utilisateur {
   nom: string;
   prenom: string;
   email: string;
-  motDePasse?: string;
-  role: 'administrateur' | 'enseignant' | 'eleve' | 'parent';
-  dateCreation: Date;
-  actif: boolean;
-  role_id: number; // Ajouté pour compatibilité API
+  mot_de_passe: string;
+  role_id: number;
+  role?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface LoginResponse {
+  utilisateur: Utilisateur;
+  token: string;
 }
 
 export interface Administrateur extends Utilisateur {

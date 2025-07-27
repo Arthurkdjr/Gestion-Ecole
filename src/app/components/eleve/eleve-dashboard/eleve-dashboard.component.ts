@@ -148,6 +148,10 @@ export class EleveDashboardComponent {
     this.currentUser = this.authService.currentUserValue;
   }
 
+  ngOnInit(): void {
+    this.currentUser = this.authService.currentUserValue;
+  }
+
   logout(): void {
     this.authService.logout();
     window.location.href = '/login';

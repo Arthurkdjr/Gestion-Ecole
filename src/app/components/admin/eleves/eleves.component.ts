@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EleveService } from '../../../services/eleve.service';
 import { Eleve } from '../../../models/utilisateur';
+import { ClasseService } from '../../../services/classe.service';
 
 @Component({
   selector: 'app-eleves',
@@ -406,17 +407,19 @@ export class ElevesComponent implements OnInit {
     classeId: ''
   };
   
-  classes = [
-    { id: 1, nom: '6ème A', niveau: '6ème' },
-    { id: 2, nom: '6ème B', niveau: '6ème' },
-    { id: 3, nom: '5ème A', niveau: '5ème' },
-    { id: 4, nom: '5ème B', niveau: '5ème' }
-  ];
+  classes: any[] = [];
 
-  constructor(private eleveService: EleveService) {}
+  constructor(private eleveService: EleveService, private classeService: ClasseService) {}
 
   ngOnInit(): void {
     this.loadEleves();
+    this.classeService.getClasses().subscribe({
+      next: (classes) => this.classes = classes,
+      error: (err) => {
+        this.classes = [];
+        console.error('Erreur lors du chargement des classes:', err);
+      }
+    });
   }
 
   loadEleves(): void {
