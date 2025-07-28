@@ -2,13 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EleveService } from '../../../services/eleve.service';
-import { Eleve } from '../../../models/utilisateur';
+import { Eleve, DocumentJustificatif } from '../../../models/utilisateur';
 import { ClasseService } from '../../../services/classe.service';
+import { DocumentUploadComponent } from './document-upload/document-upload.component';
 
 @Component({
   selector: 'app-eleves',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DocumentUploadComponent],
   template: `
     <div class="eleves-container">
       <div class="header">
@@ -64,16 +65,16 @@ import { ClasseService } from '../../../services/classe.service';
                   class="form-control">
               </div>
               
-              <div class="form-group">
-                <label for="dateNaissance">Date de naissance *</label>
-                <input 
-                  type="date" 
-                  id="dateNaissance" 
-                  name="dateNaissance" 
-                  [(ngModel)]="eleveFormData.dateNaissance" 
-                  required 
-                  class="form-control">
-              </div>
+                          <div class="form-group">
+              <label for="dateNaissance">Date de naissance *</label>
+              <input 
+                type="date" 
+                id="dateNaissance" 
+                name="dateNaissance" 
+                [(ngModel)]="eleveFormData.date_naissance" 
+                required 
+                class="form-control">
+            </div>
             </div>
             
             <div class="form-group">
@@ -90,6 +91,12 @@ import { ClasseService } from '../../../services/classe.service';
                 </option>
               </select>
             </div>
+            
+            <!-- Section Documents Justificatifs -->
+            <app-document-upload 
+              [eleveId]="editingEleve?.id || null"
+              (documentsUploaded)="onDocumentsUploaded($event)">
+            </app-document-upload>
             
             <div class="form-actions">
               <button type="button" (click)="closeForm()" class="btn-secondary">
@@ -131,11 +138,11 @@ import { ClasseService } from '../../../services/classe.service';
             </thead>
             <tbody>
               <tr *ngFor="let eleve of filteredEleves">
-                <td>{{ eleve.numeroEtudiant }}</td>
+                <td>{{ eleve.numero_etudiant }}</td>
                 <td>{{ eleve.nom }}</td>
                 <td>{{ eleve.prenom }}</td>
                 <td>{{ eleve.email }}</td>
-                <td>{{ eleve.classe.nom || 'Non assigné' }}</td>
+                <td>{{ eleve.classe?.nom || 'Non assigné' }}</td>
                 <td class="actions">
                   <button (click)="editEleve(eleve)" class="action-btn edit">
                     ✏️
@@ -403,21 +410,32 @@ export class ElevesComponent implements OnInit {
     nom: '',
     prenom: '',
     email: '',
-    dateNaissance: '',
+    date_naissance: '',
     classeId: ''
   };
-  
+
   classes: any[] = [];
+  uploadedDocuments: DocumentJustificatif[] = [];
 
   constructor(private eleveService: EleveService, private classeService: ClasseService) {}
 
   ngOnInit(): void {
     this.loadEleves();
+    this.loadClasses();
+  }
+
+  onDocumentsUploaded(documents: DocumentJustificatif[]): void {
+    this.uploadedDocuments = documents;
+    console.log('Documents uploadés:', documents);
+  }
+
+  loadClasses(): void {
     this.classeService.getClasses().subscribe({
-      next: (classes) => this.classes = classes,
-      error: (err) => {
-        this.classes = [];
-        console.error('Erreur lors du chargement des classes:', err);
+      next: (classes) => {
+        this.classes = classes;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des classes:', error);
       }
     });
   }
@@ -452,7 +470,7 @@ export class ElevesComponent implements OnInit {
       nom: eleve.nom,
       prenom: eleve.prenom,
       email: eleve.email,
-      dateNaissance: eleve.dateNaissance ? new Date(eleve.dateNaissance).toISOString().split('T')[0] : '',
+      date_naissance: eleve.date_naissance ? new Date(eleve.date_naissance).toISOString().split('T')[0] : '',
       classeId: eleve.classe?.id?.toString() || ''
     };
   }
@@ -465,7 +483,7 @@ export class ElevesComponent implements OnInit {
       nom: this.eleveFormData.nom,
       prenom: this.eleveFormData.prenom,
       email: this.eleveFormData.email,
-      date_naissance: this.eleveFormData.dateNaissance, // déjà au format YYYY-MM-DD grâce à input type="date"
+      date_naissance: this.eleveFormData.date_naissance, // déjà au format YYYY-MM-DD grâce à input type="date"
       classe_id: this.eleveFormData.classeId && !isNaN(parseInt(this.eleveFormData.classeId))
         ? parseInt(this.eleveFormData.classeId)
         : undefined
@@ -523,8 +541,9 @@ export class ElevesComponent implements OnInit {
       nom: '',
       prenom: '',
       email: '',
-      dateNaissance: '',
+      date_naissance: '',
       classeId: ''
     };
+    this.uploadedDocuments = [];
   }
 } 

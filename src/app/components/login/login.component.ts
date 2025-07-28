@@ -328,22 +328,46 @@ export class LoginComponent {
   }
 
   private redirectUser(roleId: number): void {
+    console.log('=== DÉBUT REDIRECTION ===');
+    console.log('Redirection pour role_id:', roleId);
+    console.log('URL actuelle:', window.location.href);
+    
+    let targetUrl = '';
+    
     switch (roleId) {
       case 1: // Admin
-        this.router.navigate(['/admin/dashboard']);
+        targetUrl = '/admin/dashboard';
+        console.log('Redirection vers admin/dashboard');
         break;
       case 2: // Enseignant
-        this.router.navigate(['/enseignant/dashboard']);
+        targetUrl = '/enseignant/dashboard';
+        console.log('Redirection vers enseignant/dashboard');
         break;
       case 3: // Élève
-        this.router.navigate(['/eleve/dashboard']);
+        targetUrl = '/parent/dashboard';
+        console.log('Redirection vers parent/dashboard (test)');
         break;
       case 4: // Parent
-        this.router.navigate(['/parent/dashboard']);
+        targetUrl = '/parent/dashboard';
+        console.log('Redirection vers parent/dashboard');
         break;
       default:
-        this.router.navigate(['/']);
+        targetUrl = '/';
+        console.log('Redirection vers page d\'accueil');
         break;
     }
+    
+    console.log('URL cible:', targetUrl);
+    console.log('Tentative de navigation Angular...');
+    
+    this.router.navigate([targetUrl]).then(() => {
+      console.log('Navigation Angular réussie vers:', targetUrl);
+    }).catch(error => {
+      console.error('Erreur navigation Angular:', error);
+      console.log('Tentative avec window.location.href...');
+      window.location.href = targetUrl;
+    });
+    
+    console.log('=== FIN REDIRECTION ===');
   }
 } 

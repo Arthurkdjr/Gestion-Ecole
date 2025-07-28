@@ -1,6 +1,17 @@
 import { Matiere } from './matiere';
 import { Classe } from './classe';
 
+export interface DocumentJustificatif {
+  id: number;
+  nom: string;
+  type: 'certificat_naissance' | 'bulletin_anterieur' | 'certificat_medical' | 'piece_identite' | 'autre';
+  fichier_url: string;
+  date_upload: string;
+  statut: 'en_attente' | 'valide' | 'rejete';
+  commentaire?: string;
+  eleve_id: number;
+}
+
 export interface Utilisateur {
   id: number;
   nom: string;
@@ -30,10 +41,14 @@ export interface Enseignant extends Utilisateur {
 
 export interface Eleve extends Utilisateur {
   role: 'eleve';
-  dateNaissance: Date;
-  classe: Classe;
+  date_naissance: string;
+  classe_id: number;
+  classe?: Classe;
+  parent_id?: number;
   parent?: Parent;
-  numeroEtudiant: string;
+  numero_etudiant: string;
+  documents_justificatifs?: DocumentJustificatif[];
+  statut_inscription: 'en_attente' | 'valide' | 'rejete';
 }
 
 export interface Parent extends Utilisateur {

@@ -16,7 +16,12 @@ export class AuthService {
     // Vérifier s'il y a un utilisateur stocké au démarrage
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
-      this.currentUserSubject.next(JSON.parse(storedUser));
+      const user = JSON.parse(storedUser);
+      // S'assurer que le rôle est mappé
+      if (user.role_id && !user.role) {
+        user.role = this.mapRoleIdToString(user.role_id);
+      }
+      this.currentUserSubject.next(user);
     }
   }
 

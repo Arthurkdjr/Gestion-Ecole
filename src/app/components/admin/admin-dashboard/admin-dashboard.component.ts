@@ -52,6 +52,12 @@ import { AuthService } from '../../../services/auth.service';
               Bulletins
             </a>
           </li>
+          <li>
+            <a routerLink="/admin/documents" routerLinkActive="active">
+              <span class="icon">📄</span>
+              Documents
+            </a>
+          </li>
         </ul>
         
         <div class="sidebar-footer">
