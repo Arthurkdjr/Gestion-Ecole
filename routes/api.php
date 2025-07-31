@@ -27,4 +27,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('matieres', MatiereController::class);
     Route::apiResource('notes', NoteController::class);
     Route::apiResource('enseignants', EnseignantController::class);
+
+
+
+
+
+
+    
 });
