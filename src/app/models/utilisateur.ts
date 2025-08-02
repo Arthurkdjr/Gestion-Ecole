@@ -42,7 +42,7 @@ export interface Enseignant extends Utilisateur {
 export interface Eleve extends Utilisateur {
   role: 'eleve';
   date_naissance: string;
-  classe_id: number;
+  classe_id: number | null;
   classe?: Classe;
   parent_id?: number;
   parent?: Parent;

@@ -282,7 +282,7 @@ import { MatiereService } from '../../../services/matiere.service';
                     class="form-control">
                     <option value="">Sélectionner une matière</option>
                     <option *ngFor="let matiere of matieres" [value]="matiere.id">
-                      {{ matiere.nom }} ({{ matiere.code }})
+                      {{ matiere.nom }} ({{ matiere.niveau }}) [ID: {{ matiere.id }}]
                     </option>
                   </select>
                 </div>

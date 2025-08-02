@@ -14,7 +14,7 @@ import { DocumentUploadComponent } from './document-upload/document-upload.compo
     <div class="eleves-container">
       <div class="header">
         <h1>Gestion des Élèves</h1>
-        <button (click)="showAddForm = true" class="add-btn">
+        <button (click)="preparerNouvelEleve()" class="add-btn">
           <span class="icon">➕</span>
           Ajouter un élève
         </button>
@@ -92,6 +92,40 @@ import { DocumentUploadComponent } from './document-upload/document-upload.compo
               </select>
             </div>
             
+            <div class="form-group">
+              <label for="numeroEtudiant">Numéro d'étudiant</label>
+              <input 
+                type="text" 
+                id="numeroEtudiant" 
+                name="numeroEtudiant" 
+                [(ngModel)]="eleveFormData.numero_etudiant" 
+                readonly 
+                class="form-control readonly"
+                placeholder="Généré automatiquement">
+              <small class="form-text">Numéro généré automatiquement par le système</small>
+            </div>
+            
+            <div class="form-group" *ngIf="!editingEleve">
+              <label for="motDePasse">Mot de passe temporaire</label>
+              <div class="password-display">
+                <input 
+                  type="text" 
+                  id="motDePasse" 
+                  name="motDePasse" 
+                  [value]="genererMotDePasseTemporaire()" 
+                  readonly 
+                  class="form-control readonly"
+                  #motDePasseInput>
+                <button 
+                  type="button" 
+                  (click)="motDePasseInput.value = genererMotDePasseTemporaire()" 
+                  class="regenerate-btn">
+                  🔄
+                </button>
+              </div>
+              <small class="form-text">Mot de passe temporaire généré automatiquement. L'élève devra le changer à sa première connexion.</small>
+            </div>
+            
             <!-- Section Documents Justificatifs -->
             <app-document-upload 
               [eleveId]="editingEleve?.id || null"
@@ -149,6 +183,12 @@ import { DocumentUploadComponent } from './document-upload/document-upload.compo
                   </button>
                   <button (click)="deleteEleve(eleve.id)" class="action-btn delete">
                     🗑️
+                  </button>
+                  <button *ngIf="eleve.classe" (click)="retirerClasse(eleve)" class="action-btn remove" title="Retirer de la classe">
+                    🚫
+                  </button>
+                  <button (click)="changerClasse(eleve)" class="action-btn change" title="Changer de classe">
+                    🔄
                   </button>
                 </td>
               </tr>
@@ -276,6 +316,11 @@ import { DocumentUploadComponent } from './document-upload/document-upload.compo
       outline: none;
       border-color: #667eea;
     }
+
+    .form-control.readonly {
+      background-color: #f0f0f0;
+      cursor: not-allowed;
+    }
     
     .form-actions {
       display: flex;
@@ -380,6 +425,33 @@ import { DocumentUploadComponent } from './document-upload/document-upload.compo
     .action-btn.delete:hover {
       background: #ffeaea;
     }
+
+    .form-text {
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-top: 5px;
+    }
+    
+    .password-display {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .regenerate-btn {
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+      transition: background 0.2s ease;
+    }
+
+    .regenerate-btn:hover {
+      background: #e0e0e0;
+    }
     
     @media (max-width: 768px) {
       .form-row {
@@ -411,7 +483,8 @@ export class ElevesComponent implements OnInit {
     prenom: '',
     email: '',
     date_naissance: '',
-    classeId: ''
+    classeId: '',
+    numero_etudiant: ''
   };
 
   classes: any[] = [];
@@ -438,6 +511,54 @@ export class ElevesComponent implements OnInit {
         console.error('Erreur lors du chargement des classes:', error);
       }
     });
+  }
+
+  // Générer un mot de passe temporaire
+  genererMotDePasseTemporaire(): string {
+    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let motDePasse = '';
+    for (let i = 0; i < 8; i++) {
+      motDePasse += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+    }
+    return motDePasse;
+  }
+
+  // Générer automatiquement un numéro d'étudiant unique
+  genererNumeroEtudiant(): string {
+    const annee = new Date().getFullYear();
+    
+    // Trouver le plus grand numéro existant pour cette année
+    let maxNumero = 0;
+    this.eleves.forEach(eleve => {
+      if (eleve.numero_etudiant) {
+        const match = eleve.numero_etudiant.match(new RegExp(`ISI${annee}(\\d{4})`));
+        if (match) {
+          const numero = parseInt(match[1]);
+          if (numero > maxNumero) {
+            maxNumero = numero;
+          }
+        }
+      }
+    });
+    
+    // Générer le prochain numéro
+    const nextNumero = maxNumero + 1;
+    const numeroStr = nextNumero.toString().padStart(4, '0');
+    
+    return `ISI${annee}${numeroStr}`;
+  }
+
+  // Pré-remplir le formulaire avec un numéro d'étudiant généré
+  preparerNouvelEleve(): void {
+    this.eleveFormData = {
+      nom: '',
+      prenom: '',
+      email: '',
+      date_naissance: '',
+      classeId: '',
+      numero_etudiant: this.genererNumeroEtudiant()
+    };
+    this.showAddForm = true;
   }
 
   loadEleves(): void {
@@ -471,7 +592,8 @@ export class ElevesComponent implements OnInit {
       prenom: eleve.prenom,
       email: eleve.email,
       date_naissance: eleve.date_naissance ? new Date(eleve.date_naissance).toISOString().split('T')[0] : '',
-      classeId: eleve.classe?.id?.toString() || ''
+      classeId: eleve.classe?.id?.toString() || '',
+      numero_etudiant: eleve.numero_etudiant || ''
     };
   }
 
@@ -486,7 +608,9 @@ export class ElevesComponent implements OnInit {
       date_naissance: this.eleveFormData.date_naissance, // déjà au format YYYY-MM-DD grâce à input type="date"
       classe_id: this.eleveFormData.classeId && !isNaN(parseInt(this.eleveFormData.classeId))
         ? parseInt(this.eleveFormData.classeId)
-        : undefined
+        : undefined,
+      numero_etudiant: this.eleveFormData.numero_etudiant || undefined,
+      mot_de_passe: this.editingEleve ? undefined : this.genererMotDePasseTemporaire() // Mot de passe seulement pour les nouveaux élèves
     };
 
     if (this.editingEleve) {
@@ -542,8 +666,32 @@ export class ElevesComponent implements OnInit {
       prenom: '',
       email: '',
       date_naissance: '',
-      classeId: ''
+      classeId: '',
+      numero_etudiant: ''
     };
     this.uploadedDocuments = [];
+  }
+
+  retirerClasse(eleve: Eleve): void {
+    if (!eleve || !eleve.id) return;
+    if (!confirm(`Retirer ${eleve.prenom} ${eleve.nom} de la classe ${eleve.classe?.nom} ?`)) return;
+    this.loading = true;
+    this.eleveService.updateEleve(eleve.id, { classe_id: null }).subscribe({
+      next: () => {
+        this.loadEleves();
+        this.loading = false;
+        alert('Élève retiré de la classe avec succès.');
+      },
+      error: (error) => {
+        this.loading = false;
+        alert('Erreur lors du retrait de la classe.');
+        console.error(error);
+      }
+    });
+  }
+
+  changerClasse(eleve: Eleve): void {
+    this.editEleve(eleve);
+    this.showAddForm = true;
   }
 } 

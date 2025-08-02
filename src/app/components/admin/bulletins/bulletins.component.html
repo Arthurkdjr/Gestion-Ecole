@@ -1,0 +1,251 @@
+<div class="bulletins-container">
+  <div class="header">
+    <h1>📊 Gestion des Bulletins</h1>
+    <p class="subtitle">Générez et gérez les bulletins scolaires</p>
+  </div>
+
+  <!-- Statistiques -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📋</div>
+      <div class="stat-content">
+        <h3>{{ stats.totalBulletins || 0 }}</h3>
+        <p>Bulletins générés</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-content">
+        <h3>{{ stats.totalEleves || 0 }}</h3>
+        <p>Élèves concernés</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">📈</div>
+      <div class="stat-content">
+        <h3>{{ stats.moyenneGenerale || 0 | number:'1.2-2' }}</h3>
+        <p>Moyenne générale</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-content">
+        <h3>{{ stats.meilleurEleve || 'N/A' }}</h3>
+        <p>Meilleur élève</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres et actions -->
+  <div class="filters-section">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label for="classeFilter">Classe</label>
+        <select id="classeFilter" [(ngModel)]="selectedClasseId" (change)="onClasseChange()" class="filter-select">
+          <option value="">Toutes les classes</option>
+          <option *ngFor="let classe of classes" [value]="classe.id">
+            {{ classe.nom }} - {{ classe.niveau }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="periodeFilter">Période</label>
+        <select id="periodeFilter" [(ngModel)]="selectedPeriode" (change)="onPeriodeChange()" class="filter-select">
+          <option value="">Toutes les périodes</option>
+          <option value="trimestre1">1er Trimestre</option>
+          <option value="trimestre2">2ème Trimestre</option>
+          <option value="trimestre3">3ème Trimestre</option>
+          <option value="annuel">Annuel</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="searchFilter">Rechercher</label>
+        <input 
+          type="text" 
+          id="searchFilter"
+          [(ngModel)]="searchTerm" 
+          (ngModelChange)="onSearchChange()" 
+          placeholder="Nom de l'élève..." 
+          class="filter-input">
+      </div>
+    </div>
+
+    <div class="actions-row">
+      <button (click)="genererBulletins()" class="btn-primary" [disabled]="!selectedClasseId">
+        <span class="btn-icon">📊</span>
+        Générer les bulletins
+      </button>
+      <button (click)="exporterBulletins()" class="btn-secondary" [disabled]="!selectedClasseId || generating">
+        <span class="btn-icon">📄</span>
+        <span *ngIf="!generating">Exporter PDF</span>
+        <span *ngIf="generating">Export...</span>
+      </button>
+      <button (click)="envoyerBulletinsParEmail()" class="btn-outline" [disabled]="!selectedClasseId || generating">
+        <span class="btn-icon">📧</span>
+        <span *ngIf="!generating">Envoyer par email</span>
+        <span *ngIf="generating">Envoi...</span>
+      </button>
+      <button (click)="imprimerBulletins()" class="btn-outline" [disabled]="filteredBulletins.length === 0">
+        <span class="btn-icon">🖨️</span>
+        Imprimer tout
+      </button>
+    </div>
+  </div>
+
+  <!-- Liste des bulletins -->
+  <div class="bulletins-section">
+    <div *ngIf="filteredBulletins.length > 0; else noBulletins" class="bulletins-grid">
+      <div *ngFor="let bulletin of filteredBulletins" class="bulletin-card">
+        <div class="bulletin-header">
+          <div class="eleve-info">
+            <h3>{{ bulletin.eleve?.nom }} {{ bulletin.eleve?.prenom }}</h3>
+            <p class="eleve-details">
+              <span class="detail-item">Classe: {{ bulletin.eleve?.classe?.nom || 'Non assignée' }}</span>
+              <span class="detail-item">Période: {{ bulletin.periode || 'Non spécifiée' }}</span>
+            </p>
+          </div>
+          <div class="bulletin-stats">
+            <div class="moyenne-display" 
+                 [class.excellent]="bulletin.moyenne >= 16"
+                 [class.bon]="bulletin.moyenne >= 14 && bulletin.moyenne < 16"
+                 [class.moyen]="bulletin.moyenne >= 10 && bulletin.moyenne < 14"
+                 [class.insuffisant]="bulletin.moyenne < 10">
+              <span class="moyenne-value">{{ bulletin.moyenne | number:'1.2-2' }}</span>
+              <span class="moyenne-label">/20</span>
+            </div>
+            <div class="rang-display">
+              <span class="rang-label">Rang</span>
+              <span class="rang-value">{{ bulletin.rang || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bulletin-details">
+          <div class="detail-row">
+            <div class="detail-item">
+              <span class="detail-label">Matières évaluées:</span>
+              <span class="detail-value">{{ bulletin.nombre_matieres || 0 }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Date de création:</span>
+              <span class="detail-value">{{ bulletin.created_at | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          
+          <div class="notes-summary" *ngIf="bulletin.notes && bulletin.notes.length > 0">
+            <h4>Notes par matière</h4>
+            <div class="notes-grid">
+              <div *ngFor="let note of bulletin.notes.slice(0, 3)" class="note-item">
+                <span class="matiere-name">{{ note.matiere?.nom || 'Matière' }}</span>
+                <span class="note-value" 
+                      [class.excellent]="note.note >= 16"
+                      [class.bon]="note.note >= 14 && note.note < 16"
+                      [class.moyen]="note.note >= 10 && note.note < 14"
+                      [class.insuffisant]="note.note < 10">
+                  {{ note.note }}/20
+                </span>
+              </div>
+              <div *ngIf="bulletin.notes.length > 3" class="more-notes">
+                +{{ bulletin.notes.length - 3 }} autres matières
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bulletin-actions">
+          <button (click)="voirDetailBulletin(bulletin.id)" class="btn-secondary">
+            <span class="btn-icon">👁️</span>
+            Voir détail
+          </button>
+          <button (click)="modifierBulletin(bulletin.id)" class="btn-primary">
+            <span class="btn-icon">✏️</span>
+            Modifier
+          </button>
+          <button (click)="genererPdfBulletin(bulletin)" class="btn-outline" [disabled]="generating">
+            <span class="btn-icon">📄</span>
+            <span *ngIf="!generating">Générer PDF</span>
+            <span *ngIf="generating">Génération...</span>
+          </button>
+          <button (click)="envoyerBulletinParEmail(bulletin)" class="btn-outline" [disabled]="generating">
+            <span class="btn-icon">📧</span>
+            <span *ngIf="!generating">Envoyer email</span>
+            <span *ngIf="generating">Envoi...</span>
+          </button>
+          <button (click)="imprimerBulletin(bulletin)" class="btn-outline" [disabled]="generating">
+            <span class="btn-icon">🖨️</span>
+            <span *ngIf="!generating">Imprimer</span>
+            <span *ngIf="generating">Impression...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noBulletins>
+      <div class="no-data">
+        <div class="no-data-icon">📊</div>
+        <h3>Aucun bulletin trouvé</h3>
+        <p *ngIf="selectedClasseId">
+          Aucun bulletin n'a été généré pour cette classe. 
+          <button (click)="genererBulletins()" class="btn-primary">Générer les bulletins</button>
+        </p>
+        <p *ngIf="!selectedClasseId">
+          Sélectionnez une classe pour voir les bulletins ou générer de nouveaux bulletins.
+        </p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Modal de génération -->
+  <div class="modal-overlay" *ngIf="showGenerationModal" (click)="closeGenerationModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Générer les bulletins</h2>
+        <button (click)="closeGenerationModal()" class="close-btn">×</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="generation-info">
+          <p>Vous êtes sur le point de générer les bulletins pour la classe <strong>{{ getClasseName() }}</strong>.</p>
+          <p>Cette action va créer des bulletins pour tous les élèves de cette classe.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="periodeGeneration">Période</label>
+          <select id="periodeGeneration" [(ngModel)]="periodeGeneration" class="form-control">
+            <option value="trimestre1">1er Trimestre</option>
+            <option value="trimestre2">2ème Trimestre</option>
+            <option value="trimestre3">3ème Trimestre</option>
+            <option value="annuel">Annuel</option>
+          </select>
+        </div>
+
+        <div class="eleves-preview" *ngIf="elevesClasse.length > 0">
+          <h4>Élèves concernés ({{ elevesClasse.length }})</h4>
+          <div class="eleves-list">
+            <div *ngFor="let eleve of elevesClasse.slice(0, 5)" class="eleve-item">
+              {{ eleve.nom }} {{ eleve.prenom }}
+            </div>
+            <div *ngIf="elevesClasse.length > 5" class="more-eleves">
+              +{{ elevesClasse.length - 5 }} autres élèves
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button (click)="closeGenerationModal()" class="btn-secondary">
+          Annuler
+        </button>
+        <button (click)="confirmerGeneration()" class="btn-primary" [disabled]="generating">
+          <span *ngIf="generating" class="loading-spinner"></span>
+          <span *ngIf="!generating">{{ generating ? 'Génération...' : 'Générer' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div> 

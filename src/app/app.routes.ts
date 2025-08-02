@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { RoleGuard } from './guards/role.guard';
+import { AffectationsComponent } from './components/admin/affectations/affectations.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -18,7 +19,8 @@ export const routes: Routes = [
       { path: 'enseignants', loadComponent: () => import('./components/admin/enseignants/enseignants.component').then(m => m.EnseignantsComponent) },
       { path: 'matieres', loadComponent: () => import('./components/admin/matieres/matieres.component').then(m => m.MatieresComponent) },
       { path: 'bulletins', loadComponent: () => import('./components/admin/bulletins/bulletins.component').then(m => m.BulletinsComponent) },
-      { path: 'documents', loadComponent: () => import('./components/admin/documents/documents.component').then(m => m.DocumentsComponent) }
+      { path: 'documents', loadComponent: () => import('./components/admin/documents/documents.component').then(m => m.DocumentsComponent) },
+      { path: 'affectations', component: AffectationsComponent }
     ]
   },
   

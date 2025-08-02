@@ -1,0 +1,85 @@
+<div class="bulletins-container">
+  <div class="header">
+    <h1>📋 Mes Bulletins</h1>
+    <p class="subtitle">Consultez vos résultats scolaires</p>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <h3>Moyenne Générale</h3>
+        <p class="stat-value">{{ moyenneGenerale }}/20</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">📈</div>
+      <div class="stat-content">
+        <h3>Rang</h3>
+        <p class="stat-value">{{ rang }}/{{ totalEleves }}</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-content">
+        <h3>Matières</h3>
+        <p class="stat-value">{{ matieres.length }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bulletins-list">
+    <div class="section-header">
+      <h2>📚 Détail par matière</h2>
+    </div>
+    
+    <div class="matieres-grid">
+      <div *ngFor="let matiere of matieres" class="matiere-card">
+        <div class="matiere-header">
+          <h3>{{ matiere.nom }}</h3>
+          <span class="coefficient">Coef: {{ matiere.coefficient }}</span>
+        </div>
+        
+        <div class="notes-section">
+          <div class="note-item" *ngFor="let note of matiere.notes">
+            <span class="note-label">{{ note.type }}</span>
+            <span class="note-value" [class]="getNoteClass(note.valeur)">{{ note.valeur }}/20</span>
+          </div>
+        </div>
+        
+        <div class="matiere-footer">
+          <div class="moyenne-matiere">
+            <strong>Moyenne: {{ matiere.moyenne }}/20</strong>
+          </div>
+          <div class="appreciation" [class]="getAppreciationClass(matiere.moyenne)">
+            {{ getAppreciation(matiere.moyenne) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <div class="periode-selector" *ngIf="bulletins.length > 0">
+      <label for="periodeSelect">Période :</label>
+      <select id="periodeSelect" [(ngModel)]="selectedPeriode" class="periode-select">
+        <option *ngFor="let bulletin of bulletins" [value]="bulletin.periode">
+          {{ bulletin.periode }}
+        </option>
+      </select>
+    </div>
+    
+    <div class="action-buttons">
+      <button class="btn-primary" (click)="telechargerBulletin()" [disabled]="loading || bulletins.length === 0">
+        <span *ngIf="!loading">📥 Télécharger le bulletin</span>
+        <span *ngIf="loading">⏳ Génération...</span>
+      </button>
+      <button class="btn-secondary" (click)="imprimerBulletin()" [disabled]="loading || bulletins.length === 0">
+        <span *ngIf="!loading">🖨️ Imprimer</span>
+        <span *ngIf="loading">⏳ Impression...</span>
+      </button>
+    </div>
+  </div>
+</div> 

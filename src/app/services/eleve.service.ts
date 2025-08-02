@@ -24,7 +24,7 @@ export class EleveService {
     return this.http.post<Eleve>(`${this.apiUrl}/eleves`, eleve);
   }
 
-  updateEleve(id: number, eleve: Partial<Eleve>): Observable<Eleve> {
+  updateEleve(id: number, eleve: Partial<Eleve> & { classe_id?: number | null }): Observable<Eleve> {
     return this.http.put<Eleve>(`${this.apiUrl}/eleves/${id}`, eleve);
   }
 
@@ -36,7 +36,5 @@ export class EleveService {
     return this.http.get<Eleve[]>(`${this.apiUrl}/classes/${classeId}/eleves`);
   }
 
-  affecterClasse(eleveId: number, classeId: number): Observable<Eleve> {
-    return this.http.post<Eleve>(`${this.apiUrl}/eleves/${eleveId}/affecter-classe`, { classe_id: classeId });
-  }
+  // La méthode affecterClasse est supprimée car l'affectation se fait via updateEleve
 } 
